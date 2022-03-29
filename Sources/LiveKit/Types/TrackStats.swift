@@ -52,10 +52,10 @@ public extension TrackStats {
     }
 }
 
-public struct TrackStats: Equatable {
+public struct TrackStats: Equatable, Loggable {
 
     static let keyTypeSSRC = "ssrc"
-    static let keyTrackId = "googTrackId"
+    static let keyTrackId = "trackId"
 
     static let keyBytesSent = "bytesSent"
     static let keyBytesReceived = "bytesReceived"
@@ -66,7 +66,7 @@ public struct TrackStats: Equatable {
     // date and time of this stats created
     let created = Date()
 
-    let ssrc: String
+    let ssrc: Int
     let trackId: String
 
     // TODO: add more values
@@ -108,19 +108,26 @@ public struct TrackStats: Equatable {
     // "googFrameWidthSent": "200",
     // "googFrameRateInput": "1"
 
-    init?(from values: [String: String], previous: TrackStats?) {
+    init?(from values: [String: NSObject], previous: TrackStats?) {
+
+        print("values: \(values)")
 
         // ssrc is required
-        guard let ssrc = values[TrackStats.keyTypeSSRC],
-              let trackId = values[TrackStats.keyTrackId]  else {
+        guard let ssrc = values[TrackStats.keyTypeSSRC] as? Int,
+              let trackId = values[TrackStats.keyTrackId] as? String else {
+            print("failed to get ssrc and trackId")
             return nil
         }
 
         self.ssrc = ssrc
         self.trackId = trackId
-        self.bytesSent = Int(values[TrackStats.keyBytesSent] ?? "0") ?? 0
-        self.bytesReceived = Int(values[TrackStats.keyBytesReceived] ?? "0") ?? 0
-        self.codecName = values[TrackStats.keyCodecName] as String?
+        self.bytesSent = (values[TrackStats.keyBytesSent] as? Int) ?? 0
+        self.bytesReceived = (values[TrackStats.keyBytesReceived] as? Int) ?? 0
+        self.codecName = "test"
+
+        // self.bytesSent = Int(values[TrackStats.keyBytesSent] ?? "0") ?? 0
+        // self.bytesReceived = Int(values[TrackStats.keyBytesReceived] ?? "0") ?? 0
+        // self.codecName = values[TrackStats.keyCodecName] as String?
 
         if let previous = previous {
             let secondsDiff = self.created.timeIntervalSince(previous.created)

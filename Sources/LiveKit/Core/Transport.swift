@@ -32,7 +32,7 @@ internal class Transport: MulticastDelegate<TransportDelegate> {
 
     // used for stats timer
     private var statsTimer = DispatchQueueTimer(timeInterval: 1, queue: .webRTC)
-    private var stats = [String: TrackStats]()
+    private var stats = [Int: TrackStats]()
 
     var restartingIce: Bool = false
     var renegotiate: Bool = false
@@ -199,18 +199,19 @@ extension Transport {
     func onStatsTimer() {
 
         statsTimer.suspend()
-        pc.stats(for: nil, statsOutputLevel: .standard) { [weak self] reports in
+
+        pc.statistics { [weak self] reports in
 
             guard let self = self else { return }
 
             self.statsTimer.resume()
 
-            let tracks = reports
-                .filter { $0.type == TrackStats.keyTypeSSRC }
+            let tracks = reports.statistics.values
+                .filter { ["inbound-rtp", "outbound-rtp"].contains($0.type) }
                 .map { entry -> TrackStats? in
 
                     let findPrevious = { () -> TrackStats? in
-                        guard let ssrc = entry.values[TrackStats.keyTypeSSRC],
+                        guard let ssrc = entry.values[TrackStats.keyTypeSSRC] as? Int,
                               let previous = self.stats[ssrc] else { return nil }
                         return previous
                     }
