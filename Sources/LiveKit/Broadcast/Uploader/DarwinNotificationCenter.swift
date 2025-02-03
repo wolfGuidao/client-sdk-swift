@@ -1,5 +1,5 @@
 /*
- * Copyright 2024 LiveKit
+ * Copyright 2025 LiveKit
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,16 +21,16 @@ enum DarwinNotification: String {
     case broadcastStopped = "iOS_BroadcastStopped"
 }
 
-class DarwinNotificationCenter {
-    static let shared = DarwinNotificationCenter()
+final class DarwinNotificationCenter: @unchecked Sendable {
+    public static let shared = DarwinNotificationCenter()
 
-    private let notificationCenter: CFNotificationCenter
-
-    init() {
-        notificationCenter = CFNotificationCenterGetDarwinNotifyCenter()
-    }
+    private let notificationCenter = CFNotificationCenterGetDarwinNotifyCenter()
 
     func postNotification(_ name: DarwinNotification) {
-        CFNotificationCenterPostNotification(notificationCenter, CFNotificationName(rawValue: name.rawValue as CFString), nil, nil, true)
+        CFNotificationCenterPostNotification(notificationCenter,
+                                             CFNotificationName(rawValue: name.rawValue as CFString),
+                                             nil,
+                                             nil,
+                                             true)
     }
 }
